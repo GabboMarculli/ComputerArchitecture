@@ -102,6 +102,7 @@ vector<vector<Point>> kMeans(const vector<Point>& points, int k, int maxIteratio
     //random_shuffle(points.begin(), points.end());
     for (int i = 0; i < k; ++i) {
         centroids.push_back(points[i]);
+        cout<<"centroide " <<i<< ": "<<centroids[i].coordinates[0]<<","<<centroids[i].coordinates[1]<<endl;
     }
     vector<vector<Point>> clusters(k);
     // Esegui le iterazioni di K-Means
@@ -110,14 +111,25 @@ vector<vector<Point>> kMeans(const vector<Point>& points, int k, int maxIteratio
         for (const auto& point : points) {
             int closestCentroid = findClosestCentroid(point, centroids, numDimensions);
             clusters[closestCentroid].push_back(point);
+            cout<<"closest centroid " << closestCentroid <<endl;
         }
         // Aggiorna la posizione dei centroidi
         updateCentroids(centroids, clusters, numDimensions);
         // Svuota i cluster per la prossima iterazione
-        for (auto& cluster : clusters) {
-            cluster.clear();
+        if(!(iter == maxIterations-1))
+            for (auto& cluster : clusters) {
+                cluster.clear();
+            }
+    }
+    for (auto& centroid : centroids){
+        cout<<"Centroide: "<<centroid.coordinates[0]<<","<<centroid.coordinates[0]<<endl;
+    }
+    for (int i = 0; i < k; i++){
+        for (const auto& point : clusters[i]) {
+                cout << "(" << point.coordinates[0] << ", " << point.coordinates[1] << ")" << endl;
         }
     }
+    cout << endl;
     return clusters;
 }
 int main() {
@@ -144,11 +156,11 @@ int main() {
     // Specifica il numero di cluster
     int k = 3;
     // Specifica il numero massimo di iterazioni
-    int maxIterations = 100;
+    int maxIterations = 5;
     // Esegui l'algoritmo K-Means
     vector<vector<Point>> clusters = kMeans(points, k, maxIterations, numDimensions);
     // Stampa i centroidi e i punti appartenenti a ciascun cluster
-    for (int i = 0; i < clusters.size(); ++i) {
+    for (int i = 0; i < k; i++) {
         cout << "Cluster " << i + 1 << " centroid: (" << clusters[i][0].coordinates[0] << ", " << clusters[i][0].coordinates[1] << ")" << endl;
         cout << "Points in cluster " << i + 1 << ":" << endl;
         for (const auto& point : clusters[i]) {
