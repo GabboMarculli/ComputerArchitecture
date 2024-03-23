@@ -6,15 +6,11 @@
 #include <fstream>
 using namespace std;
 // Definizione della struttura Point per rappresentare un punto nel dataset
-/*struct Point {
-    double x, y;
-    Point(double x_, double y_) : x(x_), y(y_) {}
-};*/
-// Definizione della struttura Point per rappresentare un punto nel dataset
 struct Point {
     vector<double> coordinates;
     Point(const vector<double>& coords) : coordinates(coords) {}
 };
+
 class KMeansData {
 private:
     vector<Point> points;
@@ -67,6 +63,7 @@ double distance(const Point& p1, const Point& p2, int numDimensions) {
     }
     return sqrt(somma);
 }
+
 // Trova il centroide più vicino per un dato punto
 int findClosestCentroid(const Point& point, const vector<Point>& centroids, int numDimensions) {
     double minDist = numeric_limits<double>::max();
@@ -80,6 +77,7 @@ int findClosestCentroid(const Point& point, const vector<Point>& centroids, int 
     }
     return closestCentroid;
 }
+
 // Aggiorna la posizione dei centroidi
 void updateCentroids(vector<Point>& centroids, const vector<vector<Point>>& clusters, int numDimensions) {
     for (int i = 0; i < centroids.size(); ++i) {
@@ -132,25 +130,24 @@ vector<vector<Point>> kMeans(const vector<Point>& points, int k, int maxIteratio
     cout << endl;
     return clusters;
 }
-int main() {
-    // Definisci il dataset di esempio
-    //vector<Point> points = { {1, 2}, {1.5, 1.8}, {5, 8}, {8, 8}, {1, 0.6}, {9, 11}, {8, 2}, {10, 2}, {9, 3} };
+int main(int argc, char* argv[]) {
+    if(argc != 5){
+        cout<<"Numero di parametri sbagliato"<<endl;
+        return -1;
+    }   
+    int npunti = std::atoi(argv[1]);
+    int dimensione = std::atoi(argv[2]);
+    int cluster = std::atoi(argv[3]);
+    int nthread = std::atoi(argv[4]);
+    // Definisce il dataset
     // Specifica il percorso del file contenente i punti
-    string filename = "points20_2_3.txt";
-    // Crea un'istanza di KMeansData e carica i punti dal file
+    string filename = "points" + to_string(npunti) + "_" + to_string(dimensione) + "_" + to_string(cluster) + ".txt"; 
     KMeansData kmeansData(filename);
     // Ottieni i punti e il numero di dimensioni
     vector<Point> points = kmeansData.getPoints();
+
     int numDimensions = kmeansData.getNumDimensions();
-    // Stampa i punti caricati
-    cout << "Punti caricati:" << endl;
-    for (const auto& point : points) {
-        cout << "Punto: ";
-        for (const auto& coord : point.coordinates) {
-            cout << coord << " ";
-        }
-        cout << endl;
-    }
+
     cout << "Numero di dimensioni: " << numDimensions << endl;
     // Ora puoi applicare l'algoritmo K-Means ai punti caricati
     // Specifica il numero di cluster
