@@ -42,7 +42,7 @@ def scrivi_su_file(punti, nome_file):
 #n = int(input("Insert number of points in the synthetic dataset: "))
 
 d_arr = [2]
-n_arr = [20]
+n_arr = [2000000]
 k_arr = [3]
 
 for n in n_arr:
@@ -50,8 +50,8 @@ for n in n_arr:
         for k in k_arr:          
             for i in range(1):
                 # Genera i punti casuali
-                MIN_VALUE = -20
-                MAX_VALUE = 20
+                MIN_VALUE = -100
+                MAX_VALUE = 100
                 mu = generate_points(k, d, MIN_VALUE, MAX_VALUE)
                 sigma = generate_points(k, d, (n / 1000*k), (n / 300*k))
                 dataset = dataset_generator(mu, sigma, k, d, n, MIN_VALUE, MAX_VALUE)
