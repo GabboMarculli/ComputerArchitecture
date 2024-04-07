@@ -90,19 +90,18 @@ int main(int argc, char* argv[]) {
     double distance, minDistance;
     double clusterSum[nClusters][dimensione+1];
     int* clusters = new int[npunti];    
-    #pragma omp num_threads(nthread);
     double start = omp_get_wtime();
     // Inizializzazione dei cluster all'inizio di ogni iterazione
     for (iter = 0; iter < maxIterations; iter++) {
 
         // Svuota i cluster all'inizio di ogni iterazione
-        #pragma omp parallel for
+        #pragma omp parallel for num_threads(nthread)
             for (i = 0; i < npunti; ++i) {
                 clusters[i] = 0;
             }
 
         // Calcolo dei nuovi cluster
-        #pragma omp parallel for default(shared) private(j, min_index, distance, minDistance)
+        #pragma omp parallel for default(shared) private(j, min_index, distance, minDistance) num_threads(nthread)
         for (i = 0; i < npunti; i++) {
             minDistance = numeric_limits<double>::max();
             for (j = 0; j < nClusters; j++){
@@ -129,7 +128,7 @@ int main(int argc, char* argv[]) {
         }
 
         // Aggiornamento dei centroidi
-        #pragma omp parallel for default(shared) private(j) reduction(+:clusterSum)
+        #pragma omp parallel for default(shared) private(j) reduction(+:clusterSum) num_threads(nthread)
         for (i = 0; i < npunti; i++) {
             for (j = 0; j < dimensione; j++) {
                 clusterSum[clusters[i]][j] += points[i].coordinates[j];
