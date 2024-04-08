@@ -1,0 +1,21 @@
+
+nPunti: 20000, Time: 0.938000, nThread: 1
+nPunti: 20000, Time: 0.544000, nThread: 2
+nPunti: 20000, Time: 0.409000, nThread: 3
+nPunti: 20000, Time: 0.307000, nThread: 4
+nPunti: 20000, Time: 0.347000, nThread: 5
+nPunti: 20000, Time: 0.277000, nThread: 6
+nPunti: 20000, Time: 0.240000, nThread: 7
+nPunti: 20000, Time: 0.225000, nThread: 8
+nPunti: 20000, Time: 0.276000, nThread: 9
+nPunti: 20000, Time: 0.273000, nThread: 10
+nPunti: 20000, Time: 0.276000, nThread: 11
+nPunti: 20000, Time: 0.280000, nThread: 12
+nPunti: 20000, Time: 0.268000, nThread: 13
+nPunti: 20000, Time: 0.244000, nThread: 14
+nPunti: 20000, Time: 0.240000, nThread: 15
+nPunti: 20000, Time: 0.263000, nThread: 16
+nPunti: 20000, Time: 0.250000, nThread: 17
+nPunti: 20000, Time: 0.247000, nThread: 18
+nPunti: 20000, Time: 0.253000, nThread: 19
+nPunti: 20000, Time: 0.249000, nThread: 20

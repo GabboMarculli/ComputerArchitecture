@@ -82,9 +82,9 @@ int main(int argc, char* argv[]) {
     vector<Point> centroids;
     for (int i = 0; i < nClusters; ++i) {
         centroids.push_back(points[i]);
-        cout<<"centroide " <<i<< ": "<<centroids[i].coordinates[0]<<","<<centroids[i].coordinates[1]<<endl;
+        //cout<<"centroide " <<i<< ": "<<centroids[i].coordinates[0]<<","<<centroids[i].coordinates[1]<<endl;
     }
-
+    
     vector<Point> oldCentroids;
     int iter, i, j, min_index, kl;
     double distance, minDistance;
@@ -162,10 +162,7 @@ int main(int argc, char* argv[]) {
     }
 
     double end = omp_get_wtime();
-    printf("Time: %f\n", end-start );
+    printf("nPunti: %d, Time: %f, nThread: %d\n", npunti,end-start, nthread);
     // Stampa i centroidi e i punti appartenenti a ciascun cluster
-    for(int i = 0; i < nClusters; i++){
-        printf("Centroid %d: %f, %f\n", i, centroids[i].coordinates[0], centroids[i].coordinates[1]);
-    }
     return 0;
 }
