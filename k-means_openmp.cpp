@@ -162,7 +162,7 @@ int main(int argc, char* argv[]) {
     }
 
     double end = omp_get_wtime();
-    printf("nPunti: %d, Time: %f, nThread: %d\n", npunti,end-start, nthread);
+    printf("%d; %f; %d\n", npunti,end-start, nthread);
     // Stampa i centroidi e i punti appartenenti a ciascun cluster
     return 0;
 }
