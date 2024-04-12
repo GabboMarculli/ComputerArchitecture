@@ -10,6 +10,9 @@
 using namespace std;
 
 #define maxIterations 100
+#define nClusters 3
+#define dimensione 2
+
 // Definizione della struttura Point per rappresentare un punto nel dataset
 struct Point {
     vector<double> coordinates;
@@ -62,14 +65,12 @@ public:
 };
 
 int main(int argc, char* argv[]) {
-    if(argc != 5){
+    if(argc != 3){
         cout<<"Numero di parametri sbagliato"<<endl;
         return -1;
     }   
     int npunti = std::atoi(argv[1]);
-    int dimensione = std::atoi(argv[2]);
-    int nClusters = std::atoi(argv[3]);
-    int nthread = std::atoi(argv[4]);
+    int nthread = std::atoi(argv[2]);
 
     // Definisce il dataset
     // Specifica il percorso del file contenente i punti
@@ -113,12 +114,6 @@ int main(int argc, char* argv[]) {
             }
             clusters[i] = min_index;
         }
-        /*
-        #pragma omp single
-        for(i = 0; i < npunti; i++){
-            printf("Cluster %d: %d\n", i, clusters[i]);
-        }
-        */
         // Resetto ClusterSum
         #pragma omp master
         for (i = 0; i < nClusters; i++){
@@ -143,26 +138,9 @@ int main(int argc, char* argv[]) {
                 centroids[i].coordinates[j] = clusterSum[i][j]/clusterSum[i][dimensione];
             }
         }
-        /*
-        #pragma omp single
-            for(i = 0; i < nClusters; i++){
-                if(clusterSum[i][dimensione]==0.0){
-                    clusterSum[i][dimensione]=1.0;
-                }
-            }
-        */
-        /*
-        #pragma omp master
-            for(i = 0; i < nClusters; i++){
-                for(j = 0; j < dimensione; j++){
-                    centroids[i].coordinates[j] = clusterSum[i][j];
-                }
-            }
-        */
     }
-
     double end = omp_get_wtime();
-    printf("%d; %f; %d\n", npunti,end-start, nthread);
+    printf("%d, %d, %f\n", npunti, nthread, end-start);
     // Stampa i centroidi e i punti appartenenti a ciascun cluster
     return 0;
 }
