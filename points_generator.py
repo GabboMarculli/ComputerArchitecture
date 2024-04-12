@@ -42,7 +42,7 @@ def scrivi_su_file(punti, nome_file):
 #n = int(input("Insert number of points in the synthetic dataset: "))
 
 d_arr = [2]
-n_arr = [4000000]
+n_arr = [200000]
 k_arr = [3]
 
 for n in n_arr:

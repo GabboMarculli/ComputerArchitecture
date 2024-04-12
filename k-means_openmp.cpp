@@ -10,6 +10,9 @@
 using namespace std;
 
 #define maxIterations 100
+#define dimensione 2
+#define nClusters 3
+
 // Definizione della struttura Point per rappresentare un punto nel dataset
 struct Point {
     vector<double> coordinates;
@@ -62,14 +65,12 @@ public:
 };
 
 int main(int argc, char* argv[]) {
-    if(argc != 5){
+    if(argc != 3){
         cout<<"Numero di parametri sbagliato"<<endl;
         return -1;
     }   
     int npunti = std::atoi(argv[1]);
-    int dimensione = std::atoi(argv[2]);
-    int nClusters = std::atoi(argv[3]);
-    int nthread = std::atoi(argv[4]);
+    int nthread = std::atoi(argv[2]);
 
     // Definisce il dataset
     // Specifica il percorso del file contenente i punti
@@ -91,21 +92,23 @@ int main(int argc, char* argv[]) {
     double clusterSum[nClusters][dimensione+1];
     int* clusters = new int[npunti];    
     double start = omp_get_wtime();
+
+    omp_set_num_threads(nthread);
     // Inizializzazione dei cluster all'inizio di ogni iterazione
     for (iter = 0; iter < maxIterations; iter++) {
 
         // Svuota i cluster all'inizio di ogni iterazione
-        #pragma omp parallel for num_threads(nthread)
+        #pragma omp parallel for
             for (i = 0; i < npunti; ++i) {
                 clusters[i] = 0;
             }
 
         // Calcolo dei nuovi cluster
-        #pragma omp parallel for default(shared) private(j, min_index, distance, minDistance) num_threads(nthread)
+        #pragma omp parallel for default(shared) private(j, min_index, distance, minDistance)
         for (i = 0; i < npunti; i++) {
             minDistance = numeric_limits<double>::max();
             for (j = 0; j < nClusters; j++){
-                distance = (sqrt(pow(points[i].coordinates[0] - centroids[j].coordinates[0],2) + pow(points[i].coordinates[1]- centroids[j].coordinates[1], 2)));
+                distance = ((points[i].coordinates[0]-centroids[j].coordinates[0])*(points[i].coordinates[0]-centroids[j].coordinates[0]) + (points[i].coordinates[1]-centroids[j].coordinates[1])*(points[i].coordinates[1]-centroids[j].coordinates[1]));
                 if(distance < minDistance){
                     minDistance = distance;
                     min_index = j;
@@ -113,12 +116,7 @@ int main(int argc, char* argv[]) {
             }
             clusters[i] = min_index;
         }
-        /*
-        #pragma omp single
-        for(i = 0; i < npunti; i++){
-            printf("Cluster %d: %d\n", i, clusters[i]);
-        }
-        */
+
         // Resetto ClusterSum
         #pragma omp master
         for (i = 0; i < nClusters; i++){
@@ -128,7 +126,7 @@ int main(int argc, char* argv[]) {
         }
 
         // Aggiornamento dei centroidi
-        #pragma omp parallel for default(shared) private(j) reduction(+:clusterSum) num_threads(nthread)
+        #pragma omp parallel for default(shared) private(j) reduction(+:clusterSum)
         for (i = 0; i < npunti; i++) {
             for (j = 0; j < dimensione; j++) {
                 clusterSum[clusters[i]][j] += points[i].coordinates[j];
@@ -143,26 +141,15 @@ int main(int argc, char* argv[]) {
                 centroids[i].coordinates[j] = clusterSum[i][j]/clusterSum[i][dimensione];
             }
         }
-        /*
-        #pragma omp single
-            for(i = 0; i < nClusters; i++){
-                if(clusterSum[i][dimensione]==0.0){
-                    clusterSum[i][dimensione]=1.0;
-                }
-            }
-        */
-        /*
-        #pragma omp master
-            for(i = 0; i < nClusters; i++){
-                for(j = 0; j < dimensione; j++){
-                    centroids[i].coordinates[j] = clusterSum[i][j];
-                }
-            }
-        */
     }
 
     double end = omp_get_wtime();
-    printf("%d; %f; %d\n", npunti,end-start, nthread);
+    printf("%d, %d, %f\n", npunti, nthread, end-start);
     // Stampa i centroidi e i punti appartenenti a ciascun cluster
+
+    for (int i = 0; i < nClusters; ++i) {
+        cout<<"centroide " <<i<< ": "<<centroids[i].coordinates[0]<<","<<centroids[i].coordinates[1]<<endl;
+    }
+    
     return 0;
 }

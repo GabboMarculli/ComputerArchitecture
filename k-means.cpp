@@ -148,7 +148,7 @@ int main(int argc, char* argv[]) {
     // Specifica il numero di cluster
     int k = 3;
     // Specifica il numero massimo di iterazioni
-    int maxIterations = 5;
+    int maxIterations = 100;
     // Esegui l'algoritmo K-Means
     double start = omp_get_wtime();
     vector<vector<Point>> clusters = kMeans(points, k, maxIterations, numDimensions);
