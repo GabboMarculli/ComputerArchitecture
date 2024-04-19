@@ -1,5 +1,4 @@
 #include <iostream>
-#include <vector>
 #include <cmath>
 #include <algorithm>
 #include <sstream>
@@ -13,56 +12,34 @@ using namespace std;
 #define nClusters 3
 #define dimensione 2
 
-// Definizione della struttura Point per rappresentare un punto nel dataset
-struct Point {
-    vector<double> coordinates;
-    Point(const vector<double>& coords) : coordinates(coords) {}
-};
-
-class KMeansData {
-private:
-    vector<Point> points;
-    int numDimensions;
-public:
-    // Costruttore che prende il percorso del file e carica i punti
-    KMeansData(const string& filename) {
-        loadPoints(filename);
+void loadPoints(const string& filename, double* points, int npunti) {
+    ifstream file(filename);
+    if (!file.is_open()) {
+        cerr << "Errore nell'apertura del file" << endl;
+        return;
     }
-    // Metodo per caricare i punti da un file
-    void loadPoints(const string& filename) {
-        ifstream file(filename);
-        if (!file.is_open()) {
-            cerr << "Errore nell'apertura del file" << endl;
-            return;
-        }
-        string line;
-        while (getline(file, line)) {
-            stringstream ss(line);
-            vector<double> coords;
-            numDimensions = 0;
-            string coord;
-            while (getline(ss, coord, ',')) {
-                coords.push_back(stod(coord));
-            }
-            if (numDimensions == 0) {
-                numDimensions = coords.size();
-            } else if (coords.size() != numDimensions) {
-                cerr << "Errore: Il numero di dimensioni non è consistente tra i punti" << endl;
+
+    int index = 0;
+    string line;
+    while (getline(file, line)) {
+        stringstream ss(line);
+        string coord;
+        int dim = 0;
+        while (getline(ss, coord, ',')) {
+            if (index >= npunti * dimensione) {
+                cerr << "Troppi punti nel file rispetto alla dimensione specificata" << endl;
                 return;
             }
-            points.push_back(Point(coords));
+            points[index++] = stod(coord);
+            dim++;
         }
-        file.close();
+        if (dim != dimensione) {
+            cerr << "Errore: Il numero di dimensioni non è consistente tra i punti" << endl;
+            return;
+        }
     }
-    // Metodo per ottenere i punti
-    vector<Point> getPoints() const {
-        return points;
-    }
-    // Metodo per ottenere il numero di dimensioni
-    int getNumDimensions() const {
-        return numDimensions;
-    }
-};
+    file.close();
+}
 
 int main(int argc, char* argv[]) {
     if(argc != 3){
@@ -72,21 +49,23 @@ int main(int argc, char* argv[]) {
     int npunti = std::atoi(argv[1]);
     int nthread = std::atoi(argv[2]);
 
-    // Definisce il dataset
-    // Specifica il percorso del file contenente i punti
+    double* points = new double[npunti*dimensione];
     string filename = "points" + to_string(npunti) + "_" + to_string(dimensione) + "_" + to_string(nClusters) + ".txt"; 
-    KMeansData kmeansData(filename);
-    // Ottieni i punti e il numero di dimensioni
-    vector<Point> points = kmeansData.getPoints();
 
-    // Inizializza i centroidi in posizioni casuali
-    vector<Point> centroids;
-    for (int i = 0; i < nClusters; ++i) {
-        centroids.push_back(points[i]);
-        //cout<<"centroide " <<i<< ": "<<centroids[i].coordinates[0]<<","<<centroids[i].coordinates[1]<<endl;
+    loadPoints(filename, points, npunti);
+
+    for(int i = 0; i < npunti; i++){
+        for(int j = 0; j < dimensione; j++){
+        }
     }
-    
-    vector<Point> oldCentroids;
+
+    double* centroids = new double[nClusters*dimensione];
+    for (int i = 0; i < nClusters; ++i) {
+        for(int j = 0; j < dimensione; j++){
+            centroids[i*dimensione+j] = points[i*dimensione+j];
+        }
+    }
+
     int iter, i, j, min_index, kl;
     double distance, minDistance;
     double clusterSum[nClusters][dimensione+1];
@@ -106,7 +85,7 @@ int main(int argc, char* argv[]) {
         for (i = 0; i < npunti; i++) {
             minDistance = numeric_limits<double>::max();
             for (j = 0; j < nClusters; j++){
-                distance = (sqrt(pow(points[i].coordinates[0] - centroids[j].coordinates[0],2) + pow(points[i].coordinates[1]- centroids[j].coordinates[1], 2)));
+                distance = (sqrt((points[i*dimensione] - centroids[j*dimensione])*(points[i*dimensione] - centroids[j*dimensione]) + (points[i*dimensione+1]- centroids[j*dimensione+1])*(points[i*dimensione+1]- centroids[j*dimensione+1])));
                 if(distance < minDistance){
                     minDistance = distance;
                     min_index = j;
@@ -126,7 +105,7 @@ int main(int argc, char* argv[]) {
         #pragma omp parallel for default(shared) private(j) reduction(+:clusterSum) num_threads(nthread)
         for (i = 0; i < npunti; i++) {
             for (j = 0; j < dimensione; j++) {
-                clusterSum[clusters[i]][j] += points[i].coordinates[j];
+                clusterSum[clusters[i]][j] += points[i*dimensione+j];
             }
             clusterSum[clusters[i]][dimensione]++;
         }
@@ -135,7 +114,7 @@ int main(int argc, char* argv[]) {
         #pragma omp single
         for (i = 0; i < nClusters; i++) {
             for (j = 0; j < dimensione; j++) {
-                centroids[i].coordinates[j] = clusterSum[i][j]/clusterSum[i][dimensione];
+                centroids[i*dimensione+j] = clusterSum[i][j]/clusterSum[i][dimensione];
             }
         }
     }
@@ -143,5 +122,8 @@ int main(int argc, char* argv[]) {
     double end = omp_get_wtime();
     printf("%d, %d, %f\n", npunti, nthread, end-start);
     // Stampa i centroidi e i punti appartenenti a ciascun cluster
+    /*for(int i = 0; i < nClusters; i++){
+        cout<<centroids[i*dimensione]<<","<<centroids[i*dimensione+1]<<endl;
+    }*/
     return 0;
 }
