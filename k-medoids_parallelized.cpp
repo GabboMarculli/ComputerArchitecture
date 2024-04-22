@@ -276,10 +276,10 @@ long long kMedoids(double** points, const int npunti, const int dimensione, cons
     auto duration =  std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count(); // Calculate duration in milliseconds
 
     // Print information about the execution
-    printf("nPunti: %d, Time: %lld ms, nThread: %d\n", npunti, duration, nthread);
+    //printf("nPunti: %d, Time: %lld ms, nThread: %d\n", npunti, duration, nthread);
 
     // Print the coordinates of the medoids
-    printMedoids(medoids, nClusters, dimensione);
+    //printMedoids(medoids, nClusters, dimensione);
 
     // Deallocate memory for medoids
     for (int i = 0; i < nClusters; ++i)
@@ -348,7 +348,7 @@ int main(int argc, char* argv[]) {
     int nthread = std::atoi(argv[4]); // Number of threads for parallelization
 
     // Specify the path to the file containing the points
-    string filename = "points" + to_string(npunti) + "_" + to_string(dimensione) + "_" + to_string(nClusters) + ".txt";
+    string filename = "dataset/points" + to_string(npunti) + "_" + to_string(dimensione) + "_" + to_string(nClusters) + ".txt";
     // Create an instance of KMedoidsData to load the points from the file
     KMedoidsData kmedoidsData(filename);
 
@@ -361,19 +361,20 @@ int main(int argc, char* argv[]) {
         total += execution_time;
         values[i] = execution_time; // Store execution time for each iteration
     }
-
-    cout << "Total execution time: " << total << endl;
+    //cout << "Total execution time: " << total << endl;
 
     // Calculate the arithmetic mean of execution times
     long long mean = total / NUM_EXECUTIONS;
-    cout << "Arithmetic mean: " << mean << endl;
+    //cout << "Arithmetic mean: " << mean << endl;
 
     // Calculate and print standard deviation of execution times
-    cout << "Standard deviation: " << standardDeviation(values, mean) << endl;
+    //cout << "Standard deviation: " << standardDeviation(values, mean) << endl;
     // Find and print minimum execution time
-    cout << "Minimum value: " << min_value(values) << endl;
+    //cout << "Minimum value: " << min_value(values) << endl;
     // Find and print maximum execution time
-    cout << "Maximum value: " << max_value(values) << endl;
+    //cout << "Maximum value: " << max_value(values) << endl;
+
+    cout<< npunti << "," << nClusters << "," << nthread << "," << total << "," << mean << "," << standardDeviation(values, mean) << ',' << min_value(values) << ',' << max_value(values) << endl;
 
     return 0;
 }
