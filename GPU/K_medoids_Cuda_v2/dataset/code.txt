@@ -1,0 +1,257 @@
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
+#include <iostream>
+#include <cmath>
+#include <algorithm>
+#include <vector>
+#include <sstream>
+#include <fstream>
+#include <chrono>
+#include <cstdlib>
+#include <cfloat>
+
+using namespace std;
+
+struct Point {
+    double x;
+    double y;
+};
+
+class KMedoidsData {
+private:
+    int numPoints; // Number of points in the dataset
+    int numDimensions = 2; // Number of dimensions for each point
+    vector<Point> points; // Vector of points
+
+public:
+    // Constructor that takes the file path and loads the points
+    KMedoidsData(const string& filename) {
+        loadPoints(filename);
+    }
+
+    // Method to load points from a file
+    void loadPoints(const string& filename) {
+        ifstream file(filename);
+        if (!file.is_open()) {
+            cerr << "Error opening file" << endl;
+            return;
+        }
+
+        string line;
+        numPoints = 0;
+        numDimensions = 2; // We know the struct has 2 dimensions (x, y)
+
+        while (getline(file, line)) {
+            stringstream ss(line);
+            string coord;
+            double coords[2];
+            int dimIdx = 0;
+
+            // Parse each coordinate of the point
+            while (getline(ss, coord, ',')) {
+                if (dimIdx < 2) {
+                    coords[dimIdx++] = stod(coord);
+                }
+                else {
+                    cerr << "Error: More than two dimensions in the point" << endl;
+                    return;
+                }
+            }
+
+            if (dimIdx != 2) {
+                cerr << "Error: Point does not have two dimensions" << endl;
+                return;
+            }
+
+            points.push_back({ coords[0], coords[1] });
+            numPoints++;
+        }
+        file.close();
+    }
+
+    // Method to get the points
+    const vector<Point>& getPoints() const {
+        return points;
+    }
+
+    // Method to get the number of points
+    int getNumPoints() const {
+        return numPoints;
+    }
+
+    // Method to get the number of dimensions
+    int getNumDimensions() const {
+        return numDimensions;
+    }
+};
+
+// Kernel function to calculate the Euclidean distance between two points
+__device__ double computeDistance(const Point p1, const Point p2) {
+    return sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
+
+}
+
+// Kernel function to calculate the nearest medoid for each point and update the cluster assignment
+__global__ void calculateClusters(Point* d_p, int np, Point* p_m, int nc, int* d_c) {
+    int tid = blockIdx.x * blockDim.x + threadIdx.x; // compute thread identifier
+    if (tid < np) {
+        int min_index;
+        double minDistance = DBL_MAX;
+
+        for (int j = 0; j < nc; j++) {
+            double distance = computeDistance(d_p[tid], p_m[j]);
+            if (distance < minDistance) {
+                minDistance = distance;
+                min_index = j;
+            }
+        }
+        d_c[tid] = min_index;
+    }
+}
+
+
+__global__ void updateMedoids(Point* d_p, int np, Point* d_m, int nc, int* d_c, double* d_distances) {
+    
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (tid >= np) return;
+    int clusterIdx = d_c[tid];
+    double distance = 0.0;
+    // Calculate distances and find best medoids for each cluster
+    for (int j = 0; j < np; ++j) {
+        if (d_c[j] == clusterIdx) {
+            distance += computeDistance(d_p[tid], d_p[j]);
+        }
+    }
+
+    d_distances[tid] = distance;
+}
+
+void retrieveBestMedoids(Point* d_p, Point* d_m, int nc, int np, double* d_distances, vector<int> c) {
+    // Host arrays to store intermediate results
+    vector<double> SharedDistances(np);
+
+    // Copy from device to host
+    cudaMemcpy(SharedDistances.data(), d_distances, np * sizeof(double), cudaMemcpyDeviceToHost);
+
+    // Final reduction on host
+    vector<double> finalMinDistances(nc, DBL_MAX);
+    vector<int> finalBestMedoids(nc, -1);
+
+    for (int i = 0; i < np; ++i) {
+        if (SharedDistances[i] < finalMinDistances[c[i]]) {
+            finalMinDistances[c[i]] = SharedDistances[i];
+            finalBestMedoids[c[i]] = i;
+        }
+    }
+
+    // Update medoids
+    for (int i = 0; i < nc; ++i) {
+        if (finalBestMedoids[i] != -1) {
+            cudaMemcpy(&d_m[i], &d_p[finalBestMedoids[i]], sizeof(Point), cudaMemcpyDeviceToDevice);
+        }
+    }
+}
+
+vector<Point> initializeMedoids(vector<Point> p, int np, int nc){
+
+    vector<Point> medoids;
+
+    // Initialize medoids at random positions
+    int* medoidsIndices = new int[np];
+    for (int i = 0; i < np; ++i)
+        medoidsIndices[i] = i;
+
+    random_shuffle(medoidsIndices, medoidsIndices + np); // shuffle indices randomly
+
+    // Assign points as medoids
+    for (int i = 0; i < nc; ++i)
+        medoids.push_back(p[i]);
+
+    return medoids;
+}
+
+vector<Point> kMedoids(vector<Point> p, int np, int nc) {
+    int size_p = np * sizeof(Point);
+    Point* d_p;
+    cudaMalloc((void**)&d_p, size_p);
+    cudaMemcpy(d_p, p.data(), size_p, cudaMemcpyHostToDevice);
+
+    // Launch the kernel with enough threads to cover all points
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (np + threadsPerBlock - 1) / threadsPerBlock;
+
+    vector<Point> medoids = initializeMedoids(p, np, nc);
+    cout << "Old Medoids" << endl;
+    for (int i = 0; i < medoids.size(); i++) {
+        cout << medoids[i].x << "," << medoids[i].y << endl;
+    }
+
+    int size_m = nc * sizeof(Point);
+    Point* d_m;
+    cudaMalloc((void**)&d_m, size_m);
+    cudaMemcpy(d_m, medoids.data(), size_m, cudaMemcpyHostToDevice);
+
+    int size_c = np * sizeof(int);
+    int* d_c;
+    vector<int> cluster(np);
+    cudaMalloc((void**)&d_c, size_c);
+
+    // Allocate memory for intermediate results
+    double* d_distances;
+    cudaMalloc(&d_distances, np * sizeof(double));
+
+    for (int i = 0; i < 10; i++) {
+        calculateClusters << <blocksPerGrid, threadsPerBlock >> > (d_p, np, d_m, nc, d_c);
+        cudaDeviceSynchronize();
+
+        cudaMemcpy(cluster.data(), d_c, size_c, cudaMemcpyDeviceToHost);
+
+        updateMedoids << <blocksPerGrid, threadsPerBlock >> > (d_p, np, d_m, nc, d_c, d_distances);
+        cudaDeviceSynchronize();
+
+        retrieveBestMedoids(d_p, d_m, nc, np, d_distances, cluster);
+        cudaMemcpy(medoids.data(), d_m, size_m, cudaMemcpyDeviceToHost);
+
+        cout << "New Medoids" << endl;
+        for (int i = 0; i < nc; i++) {
+            cout << medoids[i].x << "," << medoids[i].y << endl;
+        }
+    }
+
+    // Retrieve updated medoids from device to host
+    cudaMemcpy(medoids.data(), d_m, size_m, cudaMemcpyDeviceToHost);
+
+    cout << "Final Medoids" << endl;
+    for (int i = 0; i < nc; i++) {
+        cout << medoids[i].x << "," << medoids[i].y << endl;
+    }
+
+    cudaFree(d_p);
+    cudaFree(d_m);
+    cudaFree(d_c);
+
+    return medoids;
+}
+
+
+int main()
+{
+    int np = 10000;
+    int nc = 3;
+
+    // Specify the path to the file containing the points
+    string filename = "../dataset/points" + to_string(np) + "_" + to_string(2) + "_" + to_string(nc) + ".txt";
+    // Create an instance of KMedoidsData to load the points from the file
+    KMedoidsData kmedoidsData(filename);
+
+    const vector<Point>& p = kmedoidsData.getPoints();
+
+    vector<Point> medoids = kMedoids(p, np, nc);
+
+    /*for (int i = 0; i < nc; i++) {
+        cout << medoids[i].x << "," << medoids[i].y << endl;
+    }*/
+
+    return 0;
+}

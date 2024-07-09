@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "K_medoids_Cuda_v2", "K_medoids_Cuda_v2\K_medoids_Cuda_v2.vcxproj", "{AFEA80A8-ED32-4430-8E84-2F3CA6B74095}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AFEA80A8-ED32-4430-8E84-2F3CA6B74095}.Debug|x64.ActiveCfg = Debug|x64
+		{AFEA80A8-ED32-4430-8E84-2F3CA6B74095}.Debug|x64.Build.0 = Debug|x64
+		{AFEA80A8-ED32-4430-8E84-2F3CA6B74095}.Release|x64.ActiveCfg = Release|x64
+		{AFEA80A8-ED32-4430-8E84-2F3CA6B74095}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C272F46C-5087-4AF0-A0E7-F0DADDED570A}
+	EndGlobalSection
+EndGlobal

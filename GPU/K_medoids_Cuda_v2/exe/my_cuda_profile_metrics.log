@@ -1,0 +1,13 @@
+==16284== NVPROF is profiling process 16284, command: K_medoids_Cuda_v2.exe
+==16284== Some kernel(s) will be replayed on device 0 in order to collect all events/metrics.
+==16284== Profiling application: K_medoids_Cuda_v2.exe
+==16284== Profiling result:
+==16284== Metric result:
+Invocations                               Metric Name                        Metric Description         Min         Max         Avg
+Device "NVIDIA GeForce GTX 970 (0)"
+    Kernel: updateMedoids(Point*, int, Point*, int, int*, double*, int)
+         40                        l2_read_throughput                     L2 Throughput (Reads)   2e+04GB/s   2e+04GB/s   2e+04GB/s
+         40                       l2_write_throughput                    L2 Throughput (Writes)   2e+04GB/s   2e+04GB/s   2e+04GB/s
+    Kernel: calculateClusters(Point*, int, Point*, int, int*)
+         40                        l2_read_throughput                     L2 Throughput (Reads)   2e+07GB/s   3e+07GB/s   3e+07GB/s
+         39                       l2_write_throughput                    L2 Throughput (Writes)   2e+07GB/s   3e+07GB/s   3e+07GB/s

@@ -1,0 +1,12 @@
+﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(517,5): warning MSB8004: la directory Output non termina con una barra finale. Nell'istanza della compilazione verrà aggiunta la barra poiché è necessaria per consentire la corretta valutazione della directory Output.
+  Compiling CUDA source file kernel.cu...
+  
+  D:\Università\AIDE\Computer Architecture\K_medoids_Cuda_v2\K_medoids_Cuda_v2>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4\bin\nvcc.exe" -gencode=arch=compute_52,code=\"sm_52,compute_52\" --use-local-env -ccbin "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\bin\HostX64\x64" -x cu   -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4\include"  -G   --keep-dir x64\Debug  -maxrregcount=0   --machine 64 --compile -cudart static  -g  -DWIN32 -DWIN64 -D_DEBUG -D_CONSOLE -D_MBCS -Xcompiler "/EHsc /W3 /nologo /Od /FS /Zi /RTC1 /MDd " -Xcompiler "/Fdx64\Debug\vc143.pdb" -o "D:\Università\AIDE\Computer Architecture\K_medoids_Cuda_v2\K_medoids_Cuda_v2\x64\Debug\kernel.cu.obj" "D:\Università\AIDE\Computer Architecture\K_medoids_Cuda_v2\K_medoids_Cuda_v2\kernel.cu" 
+  device_functions.h is an internal header file and must not be used directly.  This file will be removed in a future CUDA release.  Please use cuda_runtime_api.h or cuda_runtime.h instead.
+  kernel.cu
+  tmpxft_000061f4_00000000-7_kernel.cudafe1.cpp
+  device_functions.h is an internal header file and must not be used directly.  This file will be removed in a future CUDA release.  Please use cuda_runtime_api.h or cuda_runtime.h instead.
+D:\Università\AIDE\Computer Architecture\K_medoids_Cuda_v2\K_medoids_Cuda_v2\kernel.cu(289): warning C4244: '+=': conversione da 'double' a '__int64'. Possibile perdita di dati.
+D:\Università\AIDE\Computer Architecture\K_medoids_Cuda_v2\K_medoids_Cuda_v2\kernel.cu(292): warning C4244: 'return': conversione da 'double' a '__int64'. Possibile perdita di dati.
+D:\Università\AIDE\Computer Architecture\K_medoids_Cuda_v2\K_medoids_Cuda_v2\kernel.cu(346): warning C4244: 'inizializzazione': conversione da 'double' a '__int64'. Possibile perdita di dati.
+  K_medoids_Cuda_v2.vcxproj -> D:\Università\AIDE\Computer Architecture\K_medoids_Cuda_v2\exe\K_medoids_Cuda_v2.exe
